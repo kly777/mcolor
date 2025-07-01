@@ -1,7 +1,7 @@
 <template>
   <div class="blocks">
     <div class="info">
-      {{ blocksData.length }} 个方块
+     共收录 {{ blocksData.length }} 个方块
     </div>
     <div class="blocks-container">
       <block class="block" v-for="block in sortedBlocks" :key="block.file_name" :block="block"></block>
