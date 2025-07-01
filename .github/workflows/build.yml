@@ -1,0 +1,33 @@
+name: 打包项目
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: npm-build工作
+    runs-on: ubuntu-latest
+
+    # strategy:
+    #   matrix:
+    #     node-version: [22.x]
+    #     # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: 项目打包
+      run: |
+        npm install -g pnpm@latest-10
+        pnpm i
+        pnpm build
+
+    - name: 将打包后的文件提交到dist分支
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: dist
+        folder: dist
