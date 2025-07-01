@@ -86,6 +86,7 @@ func calculateImageStats(img image.Image, file, imgType string) ImageStats {
 			r8 := float64(r >> 8)
 			g8 := float64(g >> 8)
 			b8 := float64(b >> 8)
+			// a8 := float64(a >> 8)
 
 			sumR += r8
 			sumG += g8

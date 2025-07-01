@@ -1,11 +1,14 @@
 <template>
   <div class="color-picker">
-    <div class="color-controls">
-      <div ref="colorPane" class="color-pane" @mousedown="startPaneDrag" @touchstart="startPaneDrag">
-        <div class="pointer" :style="pointerStyle"></div>
-      </div>
-      <div ref="valueSlider" class="value-slider" @mousedown="startValueDrag" @touchstart="startValueDrag">
-        <div class="value-pointer" :style="valuePointerStyle"></div>
+    <!-- 添加外层容器保持宽高比 -->
+    <div class="picker-container">
+      <div class="color-controls">
+        <div ref="colorPane" class="color-pane" @mousedown="startPaneDrag" @touchstart="startPaneDrag">
+          <div class="pointer" :style="pointerStyle"></div>
+        </div>
+        <div ref="valueSlider" class="value-slider" @mousedown="startValueDrag" @touchstart="startValueDrag">
+          <div class="value-pointer" :style="valuePointerStyle"></div>
+        </div>
       </div>
     </div>
 
@@ -255,17 +258,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.picker-container {
+  aspect-ratio: 1.5;
+  /* 宽高比为 3:2 */
+  max-height: 400px;
+  width: 100%;
+}
+
 .color-picker {
   display: flex;
   flex-direction: column;
-  width: 400px;
-  max-width: 100%;
+  width: 100%;
+  gap: 20px;
 }
 
 .color-controls {
   display: flex;
   width: 100%;
-  height: 300px;
+  height: 100%;
+  gap: 15px;
 }
 
 .color-pane {
@@ -289,7 +300,6 @@ onMounted(() => {
 }
 
 .value-slider {
-
   position: relative;
   width: 25px;
   height: 100%;
