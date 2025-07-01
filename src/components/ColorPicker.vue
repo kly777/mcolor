@@ -248,13 +248,13 @@ const stopValueDrag = () => {
 };
 
 // 设置色板背景
-onMounted(() => {
-  if (colorPane.value) {
-    colorPane.value.style.background = `
-      linear-gradient(to top, #000, rgba(0,0,0,0)),
-    `;
-  }
-});
+// onMounted(() => {
+//   if (colorPane.value) {
+//     colorPane.value.style.background = `
+//       linear-gradient(to top, #000, rgba(0,0,0,0)),
+//     `;
+//   }
+// });
 </script>
 
 <style scoped>
@@ -283,15 +283,17 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 1) 100%),
+  background:
+    linear-gradient(to bottom, transparent, rgba(255, 255, 255, 1) 100%),
     linear-gradient(to right,
-      rgb(255, 0, 0) 0%,
-      rgb(255, 255, 0) 17%,
-      rgb(0, 255, 0)34%,
-      rgb(0, 255, 255) 50%,
-      rgb(0, 0, 255) 67%,
-      rgb(255, 0, 255) 84%,
-      rgb(255, 0, 0) 100%);
+      rgb(255, 0, 0) 0%,   /* red */
+      rgb(255, 255, 0) 17%,  /* yellow */
+      rgb(0, 255, 0) 34%, /* green */
+      rgb(0, 255, 255) 50%, /* cyan */
+      rgb(0, 0, 255) 67%, /* blue */
+      rgb(255, 0, 255) 84%,  /* magenta */
+      rgb(255, 0, 0) 100%  /* red */
+    );
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
