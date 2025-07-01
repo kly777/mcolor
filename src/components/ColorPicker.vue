@@ -285,15 +285,7 @@ const stopValueDrag = () => {
   height: 100%;
   background:
     linear-gradient(to bottom, transparent, rgba(255, 255, 255, 1) 100%),
-    linear-gradient(to right,
-      rgb(255, 0, 0) 0%,   /* red */
-      rgb(255, 255, 0) 17%,  /* yellow */
-      rgb(0, 255, 0) 34%, /* green */
-      rgb(0, 255, 255) 50%, /* cyan */
-      rgb(0, 0, 255) 67%, /* blue */
-      rgb(255, 0, 255) 84%,  /* magenta */
-      rgb(255, 0, 0) 100%  /* red */
-    );
+    linear-gradient(to right, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 17%, rgb(0, 255, 0) 34%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 67%, rgb(255, 0, 255) 84%, rgb(255, 0, 0) 100%);
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
