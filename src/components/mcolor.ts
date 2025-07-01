@@ -1,7 +1,7 @@
 export async function loadBlocksData() {
   var blocks = [];
   try {
-    const response = await fetch('/data.json'); // 绝对路径
+    const response = await fetch('/mcolor/data.json'); // 绝对路径
     console.log(response);
     const jsonData = await response.json();
     console.log(jsonData); // 访问具体字段
