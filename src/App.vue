@@ -9,15 +9,15 @@
           <div class="rgb-inputs">
             <div class="input-group">
               <label>R:</label>
-              <input type="text" v-model.number="rgbColor.r" @input="updateColor" min="0" max="255" />
+              <input type="text" v-model.number="rgbColor.r" @change="updateColor" min="0" max="255" />
             </div>
             <div class="input-group">
               <label>G:</label>
-              <input type="text" v-model.number="rgbColor.g" @input="updateColor" min="0" max="255" />
+              <input type="text" v-model.number="rgbColor.g" @change="updateColor" min="0" max="255" />
             </div>
             <div class="input-group">
               <label>B:</label>
-              <input type="text" v-model.number="rgbColor.b" @input="updateColor" min="0" max="255" />
+              <input type="text" v-model.number="rgbColor.b" @change="updateColor" min="0" max="255" />
             </div>
           </div>
         </div>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="blocks-panel">
-      <blocks :current-color="rgbColor" />
+      <blocks :current-color="reasonableColor" />
     </div>
   </div>
 </template>
@@ -39,7 +39,7 @@ import ColorPicker from './components/ColorPicker.vue';
 import Blocks from './components/Blocks.vue';
 const colorPicker = ref<InstanceType<typeof ColorPicker> | null>(null);
 
-// 替换原来的 initRgbColor 定义
+
 const initRgbColor = (() => {
   return {
     r: Math.floor(Math.random() * 256),
@@ -48,28 +48,20 @@ const initRgbColor = (() => {
   };
 })();
 const rgbColor = ref({ r: 180, g: 100, b: 100 });
+const reasonableColor = computed(() => {
+  return {
+    r: Math.max(0, Math.min(rgbColor.value.r, 255)),
+    g: Math.max(0, Math.min(rgbColor.value.g, 255)),
+    b: Math.max(0, Math.min(rgbColor.value.b, 255))
+  }
+})
 
 const mainStyle = computed(() => ({
   backgroundColor: `rgb(${Number(rgbColor.value.r)}, ${Number(rgbColor.value.g)}, ${Number(rgbColor.value.b)})`
 }))
 
 function updateColor() {
-  if (rgbColor.value.r > 255) {
-    rgbColor.value.r = 255;
-  } else if (rgbColor.value.r < 0) {
-    rgbColor.value.r = 0;
-  }
-  if (rgbColor.value.g > 255) {
-    rgbColor.value.g = 255;
-  } else if (rgbColor.value.g < 0) {
-    rgbColor.value.g = 0;
-  }
-  if (rgbColor.value.b > 255) {
-    rgbColor.value.b = 255;
-  } else if (rgbColor.value.b < 0) {
-    rgbColor.value.b = 0;
-  }
-  colorPicker.value?.update(rgbColor.value);
+  colorPicker.value?.update(reasonableColor.value);
 }
 function randomColor() {
   rgbColor.value = {
