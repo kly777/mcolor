@@ -2,18 +2,25 @@
   <div class="blocks">
     <div class="panel">
       <div class="filter-controls">
-        <span>共 {{ filteredBlocks.length }} 个方块材质</span>
+        <div class="filter-item">
+          <span class="filter-label">材质总数: {{ filteredBlocks.length }}</span>
+        </div>
 
-        <input v-model="filterFull" class="filter-select" type="checkbox" />
-        <span for="filterFull">只显示完整材质</span>
+        <div class="filter-item">
+          <input id="filterFull" v-model="filterFull" class="filter-checkbox" type="checkbox" />
+          <label for="filterFull" class="filter-label">只显示完整材质</label>
+        </div>
 
-        <select v-model="filterType" class="filter-select">
-          <option value="all">全部类型</option>
-          <option value="side">侧面材质</option>
-          <option value="top">顶部材质</option>
-          <option value="bottom">底部材质</option>
-          <option value="null">其他</option>
-        </select>
+        <div class="filter-item">
+          <label for="typeFilter" class="filter-label">材质类型:</label>
+          <select id="typeFilter" v-model="filterType" class="filter-select">
+            <option value="all">全部类型</option>
+            <option value="side">侧面材质</option>
+            <option value="top">顶部材质</option>
+            <option value="bottom">底部材质</option>
+            <option value="null">其他</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="blocks-container">
@@ -210,6 +217,9 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
 
 <style scoped>
 .panel {
+  margin-top: 10px;
+  margin-left: 5%;
+  margin-right: 5%;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -236,5 +246,68 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
   align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #4d90fe;
+  box-shadow: 0 0 0 2px rgba(77, 144, 254, 0.2);
+}
+
+.filter-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #4d90fe;
+  cursor: pointer;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .filter-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .filter-item {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>
