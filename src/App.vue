@@ -97,8 +97,9 @@ function randomColor() {
 
 .color-panel {
   flex: 1;
-  min-width: 350px;
-  max-width: 50%;
+  min-width: 450px;
+  max-width: 100%;
+  max-height: 100%;
 
   border-radius: 12px;
   padding: 20px;
@@ -139,6 +140,17 @@ function randomColor() {
   border-radius: 12px;
   padding: 15px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .color-controls {
+    width: 90%;
+    height: auto;
+  }
+
+  .main {
+    flex-direction: column;
+  }
 }
 
 .rgb-display {
@@ -182,6 +194,8 @@ function randomColor() {
   border-radius: 6px;
   font-size: 14px;
   transition: border-color 0.2s;
+  width: 100%;
+  min-width: none;
 }
 
 .input-group input:focus {

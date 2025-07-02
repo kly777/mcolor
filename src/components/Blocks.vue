@@ -265,6 +265,7 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
 .filter-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -300,14 +301,9 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
 /* 响应式调整 */
 @media (max-width: 768px) {
   .filter-controls {
-    flex-direction: column;
-    align-items: flex-start;
+    justify-self: center;
+    align-items: center;
     gap: 10px;
-  }
-
-  .filter-item {
-    width: 100%;
-    justify-content: space-between;
   }
 }
 </style>
