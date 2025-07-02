@@ -1,12 +1,17 @@
 <template>
   <div class="block" :style="{ backgroundColor: `rgb(${block.avg_r}, ${block.avg_g}, ${block.avg_b})` }"
     :title="block.file_name">
-    <!-- 可选：显示颜色值 -->
+    <div class="block-name">
+      {{ block.file_name }}
+    </div>
     <div class="image-container">
       <img :src="block.file_path" :alt="block.file_name" class="block-image" />
     </div>
     <div class="hex-value">
       {{ rgbToHex(block.avg_r, block.avg_g, block.avg_b) }}
+    </div>
+    <div v-if="block.type !== 'null'" class="block-type">
+      {{ block.type }}
     </div>
   </div>
 </template>
@@ -47,6 +52,29 @@ const rgbToHex = (r: number, g: number, b: number) => {
   transform: translateY(-5px);
 }
 
+.block-name {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 11px;
+  font-weight: 500;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px 0 0 0;
+  max-width: 85%;
+}
+
+.block-name:hover {
+  text-overflow: unset;
+  white-space:unset;
+}
+
 .image-container {
   width: 100%;
   height: 100%;
@@ -79,5 +107,17 @@ const rgbToHex = (r: number, g: number, b: number) => {
   display: block;
   object-fit: cover;
   border: 1px solid rgba(118, 118, 118, 0.1);
+}
+
+.block-type {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 0 0 8px 0;
 }
 </style>
