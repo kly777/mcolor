@@ -1,6 +1,6 @@
 <template>
   <div class="main" :style="mainStyle">
-    
+    <ToGithub to="https://github.com/kly777/mcolor" />
     <div class="color-panel">
       <div class="color-controls">
         <color-picker ref="colorPicker" v-model:rgbColor="rgbColor" :initRgbColor="initRgbColor" />
@@ -34,6 +34,7 @@
 <script setup lang="ts">
 
 import { computed, ref, watch } from 'vue';
+import ToGithub from './components/ToGithub.vue';
 import ColorPicker from './components/ColorPicker.vue';
 import Blocks from './components/Blocks.vue';
 const colorPicker = ref<InstanceType<typeof ColorPicker> | null>(null);
@@ -95,10 +96,17 @@ function updateColor() {
   flex: 1;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
   overflow: scroll;
   display: flex;
   flex-direction: column;
+
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .color-controls {
@@ -106,7 +114,14 @@ function updateColor() {
   flex-direction: column;
   gap: 20px;
   width: 50%;
-  height: 50%;
+  height: auto;
+
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .rgb-display {

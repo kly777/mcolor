@@ -14,7 +14,7 @@
 
     <div class="color-output">
       <div>HSV: {{ hsv.h }}°, {{ hsv.s }}%, {{ hsv.v }}%</div>
-      <div>RGB: rgb({{ rgb.r }}, {{ rgb.g }}, {{ rgb.b }})</div>
+      <div>RGB: {{ rgb.r }}, {{ rgb.g }}, {{ rgb.b }}</div>
     </div>
   </div>
 </template>
