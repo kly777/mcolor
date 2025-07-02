@@ -1,7 +1,7 @@
 <template>
   <div class="block" :style="{ backgroundColor: `rgb(${block.avg_r}, ${block.avg_g}, ${block.avg_b})` }"
     :title="block.file_name">
-    <div class="block-name">
+    <div class="block-name" @click="copyFileName">
       {{ block.file_name }}
     </div>
     <div class="image-container">
@@ -13,19 +13,17 @@
     <div v-if="block.type !== 'null'" class="block-type">
       {{ block.type }}
     </div>
+    <div v-if="showCopiedHint" class="copied-hint">已复制</div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, ref } from 'vue';
 import type { BlockInfo } from './mcolor';
 
 const props = defineProps<{
   block: BlockInfo;
 }>();
-
-// 可选：是否显示十六进制颜色值
-
 
 // RGB转十六进制工具函数
 const rgbToHex = (r: number, g: number, b: number) => {
@@ -33,9 +31,50 @@ const rgbToHex = (r: number, g: number, b: number) => {
     .map(x => Math.round(x).toString(16).padStart(2, '0'))
     .join('')}`;
 };
+const showCopiedHint = ref(false) // 添加提示状态
+function copyFileName() {
+  navigator.clipboard.writeText(props.block.file_name)
+    .then(() => {
+      showCopiedHint.value = true // 显示提示
+      setTimeout(() => {
+        showCopiedHint.value = false // 2秒后隐藏提示
+      }, 2000)
+    })
+    .catch(err => {
+      console.error('复制失败:', err);
+    });
+}
 </script>
 
 <style scoped>
+.copied-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 20;
+  font-size: 12px;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
 .block {
   width: 120px;
   height: 120px;
@@ -73,6 +112,8 @@ const rgbToHex = (r: number, g: number, b: number) => {
 .block-name:hover {
   text-overflow: unset;
   white-space:unset;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .image-container {
