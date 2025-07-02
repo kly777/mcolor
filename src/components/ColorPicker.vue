@@ -336,7 +336,6 @@ const stopValueDrag = () => {
 }
 
 .color-output {
-  margin-top: 15px;
   font-family: monospace;
   font-size: 14px;
   line-height: 1.5;
