@@ -1,5 +1,5 @@
 <template>
-  <div class="block" :style="{ backgroundColor: `rgb(${block.avg_r}, ${block.avg_g}, ${block.avg_b})` }"
+  <div class="block" :style="{ backgroundColor: `rgb(${block.rgb.r}, ${block.rgb.g}, ${block.rgb.b})` }"
     :title="block.file_name">
     <div class="block-name" @click="copyFileName">
       {{ block.file_name }}
@@ -8,7 +8,7 @@
       <img :src="block.file_path" :alt="block.file_name" class="block-image" />
     </div>
     <div class="hex-value">
-      {{ rgbToHex(block.avg_r, block.avg_g, block.avg_b) }}
+      {{ rgbToHex(block.rgb) }}
     </div>
     <div v-if="block.type !== 'null'" class="block-type">
       {{ block.type }}
@@ -19,15 +19,15 @@
 
 <script lang="ts" setup>
 import { defineProps, computed, ref } from 'vue';
-import type { BlockInfo } from './mcolor';
+import type { BlockInfo, RGB } from './mcolor';
 
 const props = defineProps<{
   block: BlockInfo;
 }>();
 
 // RGB转十六进制工具函数
-const rgbToHex = (r: number, g: number, b: number) => {
-  return `#${[r, g, b]
+const rgbToHex = (rgb: RGB) => {
+  return `#${[rgb.r, rgb.g, rgb.b]
     .map(x => Math.round(x).toString(16).padStart(2, '0'))
     .join('')}`;
 };
@@ -111,7 +111,7 @@ function copyFileName() {
 
 .block-name:hover {
   text-overflow: unset;
-  white-space:unset;
+  white-space: unset;
   text-decoration: underline;
   cursor: pointer;
 }

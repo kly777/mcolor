@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { loadBlocksData, useThrottledUpdate, type BlockInfo } from './mcolor';
+import { loadBlocksData, useThrottledUpdate, type BlockInfo, rgbToLab, type Lab } from './mcolor';
 import Block from './Block.vue';
 
 const props = defineProps<{
@@ -53,58 +53,9 @@ onMounted(async () => {
   sortedBlocks.value = [...blocksData.value];
 });
 
-// 计算颜色相似度（欧几里得距离）
-// function calculateColorDistance(
-//   color1: { r: number; g: number; b: number },
-//   color2: { r: number; g: number; b: number }
-// ) {
-//   const dr = color1.r - color2.r;
-//   const dg = color1.g - color2.g;
-//   const db = color1.b - color2.b;
-//   return Math.sqrt(dr * dr + dg * dg + db * db);
-// }
-// 在 Blocks.vue 中添加以下函数
-function rgbToLab(r: number, g: number, b: number): { L: number; a: number; b: number } {
-  // RGB 转 XYZ
-  let r_ = r / 255;
-  let g_ = g / 255;
-  let b_ = b / 255;
-
-  r_ = r_ > 0.04045 ? Math.pow((r_ + 0.055) / 1.055, 2.4) : r_ / 12.92;
-  g_ = g_ > 0.04045 ? Math.pow((g_ + 0.055) / 1.055, 2.4) : g_ / 12.92;
-  b_ = b_ > 0.04045 ? Math.pow((b_ + 0.055) / 1.055, 2.4) : b_ / 12.92;
-
-  r_ *= 100;
-  g_ *= 100;
-  b_ *= 100;
-
-  const X = r_ * 0.4124564 + g_ * 0.3575761 + b_ * 0.1804375;
-  const Y = r_ * 0.2126729 + g_ * 0.7151522 + b_ * 0.0721750;
-  const Z = r_ * 0.0193339 + g_ * 0.1191920 + b_ * 0.9503041;
-
-  // XYZ 转 Lab
-  const Xn = 95.047;
-  const Yn = 100.000;
-  const Zn = 108.883;
-
-  let x = X / Xn;
-  let y = Y / Yn;
-  let z = Z / Zn;
-
-  x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + 16 / 116;
-  y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + 16 / 116;
-  z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + 16 / 116;
-
-  const L = (116 * y) - 16;
-  const a = 500 * (x - y);
-  const b__ = 200 * (y - z);
-
-  return { L, a, b: b__ };
-}
-
 // CIEDE2000 算法实现
-function deltaE2000(lab1: { L: number; a: number; b: number },
-  lab2: { L: number; a: number; b: number }): number {
+function deltaE2000(lab1: Lab,
+  lab2: Lab): number {
   const kL = 1;
   const kC = 1;
   const kH = 1;
@@ -169,13 +120,11 @@ function deltaE2000(lab1: { L: number; a: number; b: number },
   );
 }
 
-// 修改后的颜色距离计算函数
+// 使用预计算的LAB值计算颜色距离
 function calculateColorDistance(
-  color1: { r: number; g: number; b: number },
-  color2: { r: number; g: number; b: number }
+  lab1: Lab,
+  lab2: Lab
 ): number {
-  const lab1 = rgbToLab(color1.r, color1.g, color1.b);
-  const lab2 = rgbToLab(color2.r, color2.g, color2.b);
   return deltaE2000(lab1, lab2);
 }
 
@@ -192,14 +141,17 @@ watch(() => [filterFull.value, filterType.value], () => {
 })
 
 function updateSortedBlocksAndTitle() {
+  // 计算当前颜色的LAB值（仅一次）
+  const currentLab = rgbToLab(props.currentColor.r, props.currentColor.g, props.currentColor.b);
+
   sortedBlocks.value = [...filteredBlocks.value].sort((a, b) => {
     const distanceA = calculateColorDistance(
-      { r: a.avg_r, g: a.avg_g, b: a.avg_b },
-      props.currentColor
+      a.lab,
+      currentLab
     );
     const distanceB = calculateColorDistance(
-      { r: b.avg_r, g: b.avg_g, b: b.avg_b },
-      props.currentColor
+      b.lab,
+      currentLab
     );
     return distanceA - distanceB;
   });
