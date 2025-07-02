@@ -1,3 +1,5 @@
+import { onUnmounted, ref } from "vue";
+
 export async function loadBlocksData() {
   var blocks = [];
   try {
@@ -24,4 +26,49 @@ export type BlockInfo = {
   var_r: number,
   var_g: number,
   var_b: number
+}
+
+export function useThrottledUpdate(updateFn: () => void, interval = 100) {
+  const throttleTimer = ref<number | null>(null);
+  const lastUpdateTime = ref<number>(0);
+  const pendingUpdate = ref(false);
+
+  const executeUpdate = () => {
+    updateFn();
+    lastUpdateTime.value = Date.now();
+    pendingUpdate.value = false;
+  };
+
+  const triggerUpdate = () => {
+    const now = Date.now();
+    const elapsed = now - lastUpdateTime.value;
+
+    if (elapsed >= interval) {
+      if (throttleTimer.value) {
+        clearTimeout(throttleTimer.value);
+        throttleTimer.value = null;
+      }
+      executeUpdate();
+    } else {
+      pendingUpdate.value = true;
+      if (!throttleTimer.value) {
+        throttleTimer.value = setTimeout(() => {
+          if (pendingUpdate.value) {
+            executeUpdate();
+          }
+          throttleTimer.value = null;
+        }, interval - elapsed);
+      }
+    }
+  };
+
+  onUnmounted(() => {
+    if (throttleTimer.value) {
+      clearTimeout(throttleTimer.value);
+    }
+  });
+
+  return {
+    triggerUpdate
+  };
 }

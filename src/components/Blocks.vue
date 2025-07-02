@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { loadBlocksData, type BlockInfo } from './mcolor';
+import { loadBlocksData, useThrottledUpdate, type BlockInfo } from './mcolor';
 import Block from './Block.vue';
 
 const props = defineProps<{
@@ -171,6 +171,7 @@ function calculateColorDistance(
   const lab2 = rgbToLab(color2.r, color2.g, color2.b);
   return deltaE2000(lab1, lab2);
 }
+
 watch(() => [filterFull.value, filterType.value], () => {
   filteredBlocks.value = [...blocksData.value].filter((block) => {
     if (filterFull.value && !block.full) {
@@ -183,8 +184,7 @@ watch(() => [filterFull.value, filterType.value], () => {
   })
 })
 
-watch(() => [props.currentColor, filteredBlocks.value], () => {
-
+function updateSortedBlocksAndTitle() {
   sortedBlocks.value = [...filteredBlocks.value].sort((a, b) => {
     const distanceA = calculateColorDistance(
       { r: a.avg_r, g: a.avg_g, b: a.avg_b },
@@ -200,10 +200,12 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
     document.head.getElementsByTagName('link')[0].href = `/mcolor/${sortedBlocks.value[0].file_path}`
     document.title = `MColor | ${sortedBlocks.value[0].file_name}`
   }
+}
+const { triggerUpdate } = useThrottledUpdate(updateSortedBlocksAndTitle, 100);
 
+watch(() => [props.currentColor, filteredBlocks.value], () => {
+  triggerUpdate();
 }, { deep: true });
-
-
 </script>
 
 <style scoped>

@@ -76,6 +76,7 @@ function updateColor() {
   padding: 20px;
   gap: 20px;
   background-color: #f5f5f5;
+  transition: background 0.25s ease-in-out;
 }
 
 .color-panel {
