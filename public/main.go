@@ -14,17 +14,18 @@ import (
 type ImageStats struct {
 	FilePath string  `json:"file_path"`
 	FileName string  `json:"file_name"`
-	Type     string  `json:"type"`     // top/button/side/null
-	AvgR     float64 `json:"avg_r"`    // 红色通道平均值
-	AvgG     float64 `json:"avg_g"`    // 绿色通道平均值
-	AvgB     float64 `json:"avg_b"`    // 蓝色通道平均值
-	VarR     float64 `json:"var_r"`    // 红色通道方差
-	VarG     float64 `json:"var_g"`    // 绿色通道方差
-	VarB     float64 `json:"var_b"`    // 蓝色通道方差
+	Type     string  `json:"type"` // top/button/side/null
+	Full     bool    `json:"full"`
+	AvgR     float64 `json:"avg_r"` // 红色通道平均值
+	AvgG     float64 `json:"avg_g"` // 绿色通道平均值
+	AvgB     float64 `json:"avg_b"` // 蓝色通道平均值
+	VarR     float64 `json:"var_r"` // 红色通道方差
+	VarG     float64 `json:"var_g"` // 绿色通道方差
+	VarB     float64 `json:"var_b"` // 蓝色通道方差
 }
 
 func main() {
-	files, err := filepath.Glob("public/block/*.png")
+	files, err := filepath.Glob("block/*.png")
 	if err != nil {
 		log.Fatal("文件遍历失败:", err)
 	}
@@ -67,26 +68,31 @@ func main() {
 	// 5. 生成JSON输出
 	outputJSON(results)
 }
-
 func calculateImageStats(img image.Image, file, imgType string) ImageStats {
-	filename:= strings.Split(filepath.Base(file), ".")[0]
+	filename := strings.Split(filepath.Base(file), ".")[0]
 	filename = strings.ReplaceAll(filename, "_", " ")
 	bounds := img.Bounds()
-	totalPixels := bounds.Dx() * bounds.Dy()
 
-	// 初始化累加器
+	// 初始化累加器和有效像素计数器
 	var sumR, sumG, sumB float64
 	var sumSqR, sumSqG, sumSqB float64
+	totalPixels := bounds.Dx() * bounds.Dy()
+	validPixels := 0 // 记录非完全透明像素的数量
 
 	// 遍历所有像素
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			r, g, b, _ := img.At(x, y).RGBA()
+			r, g, b, a := img.At(x, y).RGBA()
+
 			// 转换到0-255范围
+			a8 := float64(a >> 8)
+			if a8 == 0 { // 完全透明的像素跳过计算
+				continue
+			}
+
 			r8 := float64(r >> 8)
 			g8 := float64(g >> 8)
 			b8 := float64(b >> 8)
-			// a8 := float64(a >> 8)
 
 			sumR += r8
 			sumG += g8
@@ -95,23 +101,30 @@ func calculateImageStats(img image.Image, file, imgType string) ImageStats {
 			sumSqR += r8 * r8
 			sumSqG += g8 * g8
 			sumSqB += b8 * b8
+
+			validPixels++ // 增加有效像素计数
 		}
 	}
+	if validPixels == 0 {
+		// 返回空值或默认值
+		return ImageStats{FilePath: file, FileName: filename, Type: imgType}
+	}
 
-	// 计算平均值
-	avgR := sumR / float64(totalPixels)
-	avgG := sumG / float64(totalPixels)
-	avgB := sumB / float64(totalPixels)
+	// 计算平均值（使用有效像素数）
+	avgR := sumR / float64(validPixels)
+	avgG := sumG / float64(validPixels)
+	avgB := sumB / float64(validPixels)
 
-	// 计算方差
-	varR := (sumSqR/float64(totalPixels) - avgR*avgR)
-	varG := (sumSqG/float64(totalPixels) - avgG*avgG)
-	varB := (sumSqB/float64(totalPixels) - avgB*avgB)
+	// 计算方差（使用有效像素数）
+	varR := (sumSqR/float64(validPixels) - avgR*avgR)
+	varG := (sumSqG/float64(validPixels) - avgG*avgG)
+	varB := (sumSqB/float64(validPixels) - avgB*avgB)
 
 	return ImageStats{
 		FilePath: file,
 		FileName: filename,
 		Type:     imgType,
+		Full:     totalPixels == validPixels,
 		AvgR:     avgR,
 		AvgG:     avgG,
 		AvgB:     avgB,
@@ -120,7 +133,6 @@ func calculateImageStats(img image.Image, file, imgType string) ImageStats {
 		VarB:     varB,
 	}
 }
-
 func outputJSON(results []ImageStats) {
 	jsonData, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
