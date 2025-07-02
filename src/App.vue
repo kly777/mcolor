@@ -77,6 +77,7 @@ function randomColor() {
     g: Math.floor(Math.random() * 256),
     b: Math.floor(Math.random() * 256)
   }
+  colorPicker.value?.update(rgbColor.value);
 }
 
 </script>
