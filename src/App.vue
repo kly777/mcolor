@@ -1,7 +1,7 @@
 <template>
-  <div class="main" :style="mainStyle">
+  <div class="main" :style="mainStyle" @click.self="randomColor">
     <ToGithub to="https://github.com/kly777/mcolor" />
-    <div class="color-panel">
+    <div class="color-panel" @click.self="randomColor">
       <div class="color-controls">
         <color-picker ref="colorPicker" v-model:rgbColor="rgbColor" :initRgbColor="initRgbColor" />
 
@@ -39,7 +39,14 @@ import ColorPicker from './components/ColorPicker.vue';
 import Blocks from './components/Blocks.vue';
 const colorPicker = ref<InstanceType<typeof ColorPicker> | null>(null);
 
-const initRgbColor = { r: 0, g: 70, b: 140 };
+// 替换原来的 initRgbColor 定义
+const initRgbColor = (() => {
+  return {
+    r: Math.floor(Math.random() * 256),
+    g: Math.floor(Math.random() * 256),
+    b: Math.floor(Math.random() * 256)
+  };
+})();
 const rgbColor = ref({ r: 180, g: 100, b: 100 });
 
 const mainStyle = computed(() => ({
@@ -64,6 +71,14 @@ function updateColor() {
   }
   colorPicker.value?.update(rgbColor.value);
 }
+function randomColor() {
+  rgbColor.value = {
+    r: Math.floor(Math.random() * 256),
+    g: Math.floor(Math.random() * 256),
+    b: Math.floor(Math.random() * 256)
+  }
+}
+
 </script>
 <style scoped>
 .main {
@@ -76,7 +91,7 @@ function updateColor() {
   padding: 20px;
   gap: 20px;
   background-color: #f5f5f5;
-  transition: background 0.25s ease-in-out;
+  transition: background 0.4s ease-in-out;
 }
 
 .color-panel {
