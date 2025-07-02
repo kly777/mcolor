@@ -16,7 +16,8 @@ export async function loadBlocksData() {
 export type BlockInfo = {
   file_path: string;
   file_name: string,
-  type: string,
+  type: "null" | "side" | "top" | "bottom",
+  full: boolean,
   avg_r: number,
   avg_g: number,
   avg_b: number,
