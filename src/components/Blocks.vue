@@ -42,8 +42,8 @@ const filteredBlocks = ref<BlockInfo[]>([])
 
 onMounted(async () => {
   blocksData.value = await loadBlocksData();
-  sortedBlocks.value = [...blocksData.value];
   filteredBlocks.value = [...blocksData.value];
+  sortedBlocks.value = [...blocksData.value];
 });
 
 // 计算颜色相似度（欧几里得距离）
@@ -196,6 +196,11 @@ watch(() => [props.currentColor, filteredBlocks.value], () => {
     );
     return distanceA - distanceB;
   });
+  if (sortedBlocks.value.length > 0) {
+    document.head.getElementsByTagName('link')[0].href = `/mcolor/${sortedBlocks.value[0].file_path}`
+    document.title = `MColor | ${sortedBlocks.value[0].file_name}`
+  }
+
 }, { deep: true });
 
 
