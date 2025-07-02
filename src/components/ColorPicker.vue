@@ -280,6 +280,7 @@ const stopValueDrag = () => {
 }
 
 .color-pane {
+  box-sizing: border-box;
   position: relative;
   width: 100%;
   height: 100%;
@@ -294,6 +295,7 @@ const stopValueDrag = () => {
 }
 
 .value-slider {
+  box-sizing: border-box;
   position: relative;
   width: 25px;
   height: 100%;
