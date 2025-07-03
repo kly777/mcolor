@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, computed, ref } from 'vue';
+import {  computed, ref } from 'vue';
 import type { BlockInfo, RGB } from './mcolor';
 
 const props = defineProps<{
