@@ -148,6 +148,8 @@ function copyFileName() {
   display: block;
   object-fit: cover;
   border: 1px solid rgba(118, 118, 118, 0.1);
+  image-rendering:pixelated;
+  loading: lazy;
 }
 
 .block-type {
