@@ -36,6 +36,7 @@ import Block from './Block.vue';
 
 const props = defineProps<{
   currentColor: { r: number; g: number; b: number };
+  dragging: boolean;
 }>();
 
 const blocksData = ref<BlockInfo[]>([]);
@@ -128,6 +129,17 @@ function calculateColorDistance(
   return deltaE2000(lab1, lab2);
 }
 
+// RGB 空间欧氏距离（纯加减乘除，零 trig，用于拖拽时实时排序）
+function rgbEuclideanDistance(
+  rgb1: { r: number; g: number; b: number },
+  rgb2: { r: number; g: number; b: number }
+): number {
+  const dr = rgb1.r - rgb2.r;
+  const dg = rgb1.g - rgb2.g;
+  const db = rgb1.b - rgb2.b;
+  return dr * dr + dg * dg + db * db; // 省掉 sqrt，只比较平方值
+}
+
 watch(() => [filterFull.value, filterType.value], () => {
   filteredBlocks.value = [...blocksData.value].filter((block) => {
     if (filterFull.value && !block.full) {
@@ -141,21 +153,21 @@ watch(() => [filterFull.value, filterType.value], () => {
 })
 
 function updateSortedBlocksAndTitle() {
-  // 计算当前颜色的LAB值（仅一次）
-  const currentLab = rgbToLab(props.currentColor.r, props.currentColor.g, props.currentColor.b);
+  // 拖拽时用 RGB 欧氏距离（极轻量），否则用 CIEDE2000（精确）
+  const useAccurate = !props.dragging;
 
-  sortedBlocks.value = [...filteredBlocks.value].sort((a, b) => {
-    const distanceA = calculateColorDistance(
-      a.lab,
-      currentLab
-    );
-    const distanceB = calculateColorDistance(
-      b.lab,
-      currentLab
-    );
-    return distanceA - distanceB;
-  });
-  if (sortedBlocks.value.length > 0) {
+  const withDistances = filteredBlocks.value.map(block => ({
+    block,
+    distance: useAccurate
+      ? calculateColorDistance(block.lab, rgbToLab(props.currentColor.r, props.currentColor.g, props.currentColor.b))
+      : rgbEuclideanDistance(block.rgb, props.currentColor)
+  }));
+  // 按预计算的距离排序（比较器只比数字）
+  withDistances.sort((a, b) => a.distance - b.distance);
+  sortedBlocks.value = withDistances.map(item => item.block);
+
+  // 仅在精确排序时更新标题和 favicon
+  if (useAccurate && sortedBlocks.value.length > 0) {
     document.head.getElementsByTagName('link')[0].href = `/mcolor/${sortedBlocks.value[0].file_path}`
     document.title = `MColor | ${sortedBlocks.value[0].file_name}`
   }
@@ -165,6 +177,13 @@ const { triggerUpdate } = useThrottledUpdate(updateSortedBlocksAndTitle, 100);
 watch(() => [props.currentColor, filteredBlocks.value], () => {
   triggerUpdate();
 }, { deep: true });
+
+// 拖拽结束时执行一次最终排序（绕过节流）
+watch(() => props.dragging, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    updateSortedBlocksAndTitle();
+  }
+});
 </script>
 
 <style scoped>

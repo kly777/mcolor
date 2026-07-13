@@ -139,7 +139,7 @@ const rgb = computed(() => {
   };
 });
 
-const emit = defineEmits(['update:rgbColor']);
+const emit = defineEmits(['update:rgbColor', 'dragStart', 'dragEnd']);
 
 // watch(() => props.rgbColor, (newValue) => {
 //   // 将RGB转换为HSV用于内部位置计算
@@ -151,10 +151,7 @@ const emit = defineEmits(['update:rgbColor']);
 //   valuePosition.value = hsvColor.v / 100;
 // }, { immediate: true });
 watch([position, valuePosition], () => {
-  // 防抖处理，避免频繁触发
-  nextTick(() => {
-    emit('update:rgbColor', rgb.value);
-  });
+  emit('update:rgbColor', rgb.value);
 }, { deep: true });
 // 指针位置样式
 const pointerStyle = computed(() => ({
@@ -170,6 +167,7 @@ const valuePointerStyle = computed(() => ({
 // 开始拖动颜色面板
 const startPaneDrag = (e: MouseEvent | TouchEvent) => {
   paneDragging.value = true;
+  emit('dragStart');
   updatePanePosition(e);
   window.addEventListener('mousemove', updatePanePosition);
   window.addEventListener('touchmove', updatePanePosition);
@@ -202,6 +200,7 @@ const updatePanePosition = (e: MouseEvent | TouchEvent) => {
 // 停止拖动
 const stopPaneDrag = () => {
   paneDragging.value = false;
+  emit('dragEnd');
   window.removeEventListener('mousemove', updatePanePosition);
   window.removeEventListener('touchmove', updatePanePosition);
   window.removeEventListener('mouseup', stopPaneDrag);
@@ -212,6 +211,7 @@ const stopPaneDrag = () => {
 // 开始拖动明度滑块
 const startValueDrag = (e: MouseEvent | TouchEvent) => {
   valueDragging.value = true;
+  emit('dragStart');
   updateValuePosition(e);
   window.addEventListener('mousemove', updateValuePosition);
   window.addEventListener('touchmove', updateValuePosition);
@@ -241,6 +241,7 @@ const updateValuePosition = (e: MouseEvent | TouchEvent) => {
 // 停止拖动明度滑块
 const stopValueDrag = () => {
   valueDragging.value = false;
+  emit('dragEnd');
   window.removeEventListener('mousemove', updateValuePosition);
   window.removeEventListener('touchmove', updateValuePosition);
   window.removeEventListener('mouseup', stopValueDrag);

@@ -3,7 +3,7 @@
     <ToGithub to="https://github.com/kly777/mcolor" />
     <div class="color-panel" @click.self="randomColor">
       <div class="color-controls">
-        <color-picker ref="colorPicker" v-model:rgbColor="rgbColor" :initRgbColor="initRgbColor" />
+        <color-picker ref="colorPicker" v-model:rgbColor="rgbColor" :initRgbColor="initRgbColor" @drag-start="isDragging = true" @drag-end="isDragging = false" />
 
         <div class="rgb-display">
           <div class="rgb-inputs">
@@ -25,7 +25,7 @@
     </div>
 
     <div class="blocks-panel">
-      <blocks :current-color="reasonableColor" />
+      <blocks :current-color="reasonableColor" :dragging="isDragging" />
     </div>
   </div>
 </template>
@@ -33,11 +33,12 @@
 
 <script setup lang="ts">
 
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import ToGithub from './components/ToGithub.vue';
 import ColorPicker from './components/ColorPicker.vue';
 import Blocks from './components/Blocks.vue';
 const colorPicker = ref<InstanceType<typeof ColorPicker> | null>(null);
+const isDragging = ref(false);
 
 
 const initRgbColor = (() => {
