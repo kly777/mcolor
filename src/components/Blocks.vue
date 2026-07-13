@@ -23,16 +23,28 @@
         </div>
       </div>
     </div>
-    <div class="blocks-container">
-      <block class="block" v-for="block in sortedBlocks" :key="block.file_name" :block="block"></block>
+    <div ref="scrollContainerRef" class="blocks-container" @scroll="onScroll">
+      <div :style="spacerStyle">
+        <block
+          v-for="item in visibleItems"
+          :key="item.block.file_name"
+          :block="item.block"
+          :style="item.style"
+          class="block"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue';
 import { loadBlocksData, useThrottledUpdate, type BlockInfo, rgbToLab, type Lab } from './mcolor';
 import Block from './Block.vue';
+
+const BLOCK_SIZE = 120;
+const GAP = 15;
+const CELL = BLOCK_SIZE + GAP; // 135
 
 const props = defineProps<{
   currentColor: { r: number; g: number; b: number };
@@ -41,18 +53,89 @@ const props = defineProps<{
 
 const blocksData = ref<BlockInfo[]>([]);
 const sortedBlocks = ref<BlockInfo[]>([]);
-const filterType = ref<string>('all'); // 添加筛选状态变量
+const filterType = ref<string>('all');
 const filterFull = ref<boolean>(false);
 
-// 计算过滤后的方块列表
-const filteredBlocks = ref<BlockInfo[]>([])
+const filteredBlocks = ref<BlockInfo[]>([]);
 
+// 虚拟滚动状态
+const scrollContainerRef = ref<HTMLElement | null>(null);
+const scrollTop = ref(0);
+const containerWidth = ref(800);
+let resizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
   blocksData.value = await loadBlocksData();
   filteredBlocks.value = [...blocksData.value];
   sortedBlocks.value = [...blocksData.value];
+
+  // 监听容器宽度变化
+  if (scrollContainerRef.value) {
+    containerWidth.value = scrollContainerRef.value.clientWidth;
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        containerWidth.value = entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
+      }
+    });
+    resizeObserver.observe(scrollContainerRef.value);
+  }
 });
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+});
+
+const columns = computed(() => Math.max(1, Math.floor((containerWidth.value + GAP) / CELL)));
+
+const totalRows = computed(() => Math.ceil(sortedBlocks.value.length / columns.value));
+
+// 撑开滚动高度的 spacer
+const spacerStyle = computed(() => ({
+  height: `${Math.max(1, totalRows.value * CELL)}px`,
+  position: 'relative' as const,
+}));
+
+// 水平居中偏移
+const leftOffset = computed(() => {
+  const totalGridWidth = columns.value * CELL - GAP;
+  return Math.max(0, Math.floor((containerWidth.value - totalGridWidth) / 2));
+});
+
+// 可视范围
+const visibleItems = computed(() => {
+  const col = columns.value;
+  if (col === 0 || sortedBlocks.value.length === 0) return [];
+
+  const rowHeight = CELL;
+  const containerHeight = scrollContainerRef.value?.clientHeight ?? 800;
+  const startRow = Math.max(0, Math.floor(scrollTop.value / rowHeight));
+  const visibleRows = Math.ceil(containerHeight / rowHeight) + 3; // 上下各多 1.5 行缓冲
+  const endRow = Math.min(totalRows.value, startRow + visibleRows);
+
+  const start = startRow * col;
+  const end = Math.min(sortedBlocks.value.length, endRow * col);
+
+  const items = [];
+  for (let i = start; i < end; i++) {
+    const row = Math.floor(i / col);
+    const column = i % col;
+    items.push({
+      block: sortedBlocks.value[i],
+      style: {
+        position: 'absolute' as const,
+        left: `${column * CELL + leftOffset.value}px`,
+        top: `${row * CELL}px`,
+        width: `${BLOCK_SIZE}px`,
+        height: `${BLOCK_SIZE}px`,
+      },
+    });
+  }
+  return items;
+});
+
+function onScroll(e: Event) {
+  scrollTop.value = (e.target as HTMLElement).scrollTop;
+}
 
 // CIEDE2000 算法实现
 function deltaE2000(lab1: Lab,
@@ -66,7 +149,7 @@ function deltaE2000(lab1: Lab,
 
   const aC = (C1 + C2) / 2;
   const aC7 = Math.pow(aC, 7);
-  const G = 0.5 * (1 - Math.sqrt(aC7 / (aC7 + 6103515625))); // 6103515625 = 25^7
+  const G = 0.5 * (1 - Math.sqrt(aC7 / (aC7 + 6103515625)));
 
   const a1p = (1 + G) * lab1.a;
   const a2p = (1 + G) * lab2.a;
@@ -137,7 +220,7 @@ function rgbEuclideanDistance(
   const dr = rgb1.r - rgb2.r;
   const dg = rgb1.g - rgb2.g;
   const db = rgb1.b - rgb2.b;
-  return dr * dr + dg * dg + db * db; // 省掉 sqrt，只比较平方值
+  return dr * dr + dg * dg + db * db;
 }
 
 watch(() => [filterFull.value, filterType.value], () => {
@@ -162,11 +245,9 @@ function updateSortedBlocksAndTitle() {
       ? calculateColorDistance(block.lab, rgbToLab(props.currentColor.r, props.currentColor.g, props.currentColor.b))
       : rgbEuclideanDistance(block.rgb, props.currentColor)
   }));
-  // 按预计算的距离排序（比较器只比数字）
   withDistances.sort((a, b) => a.distance - b.distance);
   sortedBlocks.value = withDistances.map(item => item.block);
 
-  // 仅在精确排序时更新标题和 favicon
   if (useAccurate && sortedBlocks.value.length > 0) {
     document.head.getElementsByTagName('link')[0].href = `/mcolor/${sortedBlocks.value[0].file_path}`
     document.title = `MColor | ${sortedBlocks.value[0].file_name}`
@@ -198,25 +279,14 @@ watch(() => props.dragging, (newVal, oldVal) => {
 .blocks {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .blocks-container {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  overflow-y: scroll;
-  gap: 15px;
-}
-
-.filter-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
 }
 
 .filter-controls {

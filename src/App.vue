@@ -108,7 +108,7 @@ function randomColor() {
   background: white;
   border-radius: 12px;
 
-  overflow: scroll;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 
